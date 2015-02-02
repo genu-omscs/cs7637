@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Random;
 
 /**
  * Your Agent for solving Raven's Progressive Matrices. You MUST modify this
@@ -53,10 +54,7 @@ public class Agent {
      * @return your Agent's answer to this problem
      */
     public String Solve(RavensProblem problem) {
-
-        int source_diff = this.getFigureDifference(problem.getFigures().get("A"), problem.getFigures().get("B"));
-
-//        if (problem.getName().compareTo("2x1 Basic Problem 12") != 0)
+//        if (problem.getName().compareTo("2x1 Challenge Problem 04") != 0)
 //            return "0";
 
         // Figure out transformation between A and B first
@@ -123,9 +121,16 @@ public class Agent {
         else {
             RavensFigure answer = null;
             for (RavensFigure candidateFigure : candidateAnswers) {
+                // Match the figure with the first shape being the same
                 if (candidateFigure.getObjects().get(0).getAttributes().get(0).getValue().compareTo(C.getObjects().get(0).getAttributes().get(0).getValue()) == 0) {
                     answer = candidateFigure;
+                }else{
+                    // Just take a guess at the answer
+                    Random number = new Random();
+                    int guess = number.nextInt(candidateAnswers.size() - 1 - 1 + 1) + 1;
+                    answer = candidateAnswers.get(guess);
                 }
+
             }
 
             return answer.getName();
@@ -133,19 +138,12 @@ public class Agent {
 
     }
 
-    public RavensFigure applyTransformation(ArrayList<Transformation> sourceTransformations, RavensFigure figure) {
-        RavensFigure transformedFigure = new RavensFigure(figure.getName() + "*");
-        for (Transformation sourceTransformation : sourceTransformations) {
-            String test = "test";
-        }
-
-        return null;
-    }
-
-
-    public void asdf() {
-
-    }
+    /**
+     * Collects all the mutations from a set of transformations into one array
+     *
+     * @param transformations
+     * @return
+     */
     public ArrayList<RavensAttribute> collectMutations(ArrayList<Transformation> transformations) {
         ArrayList<RavensAttribute> mutations = new ArrayList<RavensAttribute>();
 
@@ -162,12 +160,24 @@ public class Agent {
         return mutations;
     }
 
+    /**
+     * Print transformation
+     *
+     * @param transformation
+     */
     public void printTransformations(ArrayList<Transformation> transformation) {
         for (Transformation trans : transformation) {
             trans.print();
         }
     }
 
+    /**
+     * Computes the transfomration between two figures
+     *
+     * @param figure1
+     * @param figure2
+     * @return
+     */
     private ArrayList<Transformation> computeTransformation(RavensFigure figure1, RavensFigure figure2) {
         ArrayList<Transformation> transformations = new ArrayList<Transformation>();
         ArrayList<RavensObject> targetsMapped = new ArrayList<RavensObject>();
@@ -232,103 +242,4 @@ public class Agent {
 
         return differences;
     }
-
-    /**
-     * Calculates the difference between 2 figures
-     *
-     * @param figure1
-     * @param figure2
-     * @return
-     */
-    private int getFigureDifference(RavensFigure figure1, RavensFigure figure2) {
-        int diff = 0;
-        for (RavensObject object1 : figure1.getObjects()) {
-            // Are there multiple similar shapes in figure 2?
-            if (numberOfShapesLike(figure2, object1) > 1) {
-                // Find the shortest path from object1 to those similar shapes to figure out which one is correct
-
-            }
-            for (RavensObject object2 : figure2.getObjects()) {
-                if (isSameObject(object1, object2)) {
-                    diff += this.getObjectDifference(object1, object2);
-                }
-            }
-        }
-
-        return diff;
-    }
-
-    /**
-     * Calculates the difference between 2 objects
-     *
-     * @param object1
-     * @param object2
-     * @return
-     */
-    private int getObjectDifference(RavensObject object1, RavensObject object2) {
-        int diff = 0;
-        for (RavensAttribute attribute1 : object1.getAttributes()) {
-            for (RavensAttribute attribute2 : object2.getAttributes()) {
-                diff += this.getAttributeDifference(attribute1, attribute2);
-            }
-        }
-
-        return diff;
-    }
-
-    /**
-     * Check whether two attributes are the same. Only attributes with the same name are comparable
-     *
-     * @param attribute1
-     * @param attribute2
-     * @return
-     */
-    private int getAttributeDifference(RavensAttribute attribute1, RavensAttribute attribute2) {
-        if (attribute1.getName().compareTo(attribute2.getName()) == 0) // Comparing only same attributes
-            if (attribute1.getValue().compareTo(attribute2.getValue()) != 0)
-                return 1;
-
-        return 0;
-    }
-
-    /**
-     * Checks whether these to objects are the same shape
-     * Makes the assumption that the first attribute is the shape type
-     *
-     * @param object1
-     * @param object2
-     * @return
-     */
-    private boolean isSameObject(RavensObject object1, RavensObject object2) {
-        return object1.getAttributes().get(0).getValue().compareTo(object2.getAttributes().get(0).getValue()) == 0;
-    }
-
-    /**
-     * Check if target figure has multiple of given object
-     *
-     * @param targetFigure
-     * @param needle
-     * @return
-     */
-    private int numberOfShapesLike(RavensFigure targetFigure, RavensObject needle) {
-        int shapesFound = 0;
-        for (RavensObject object : targetFigure.getObjects()) {
-            if (getShapeName(object).compareTo(getShapeName(needle)) == 0) {
-                shapesFound++;
-            }
-        }
-
-        return shapesFound;
-    }
-
-    private String getShapeName(RavensObject object) {
-        for (RavensAttribute attribute : object.getAttributes()) {
-            if (attribute.getName().compareTo("shape") == 0) {
-                return attribute.getValue();
-            }
-        }
-
-        return null;
-    }
-
 }
